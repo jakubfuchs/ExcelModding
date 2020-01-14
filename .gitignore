@@ -1,0 +1,5 @@
+*.json
+.git
+.Rproj.user
+.RData
+.Rhistory
