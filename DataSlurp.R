@@ -96,6 +96,10 @@ function() {
   slurpData(readFn = (function(path, sheet) readxl::read_excel(path, sheet, col_names = FALSE))) %>% View
   slurpData(target = core$target, files = core$files, ws = core$worksheet) %>% View
   
+  # for specific file:
+  # slurpData(target = file.path(getSettings$dirData, "subfolder/2020/"),
+  #           files = "this_one_file.xlsm") %>% View
+  
   rm(list = ls())
   source('DataSlurp.R', encoding = 'UTF-8', echo=FALSE)
   
