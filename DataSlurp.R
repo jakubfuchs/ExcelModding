@@ -1,34 +1,31 @@
 library(magrittr)
 library(dplyr)
-library(readxl)
-library(RJSONIO)
-
-# init setup function
-getSettings <- function() {fromJSON("settings.json", encoding = "UTF-8")}
 
 # define and set files in scope
-setFiles <- function(dir, exclude=NULL) {
-  files <- list.files(dir, pattern = ".xlsm", recursive = T)
+setFiles <- function(target=core$target, excludeAny=NULL) {
+  # use the file.path() funcition EVER!!! (avoid system, back/fwrd slash and encoding hell)
+  files <- list.files(file.path(target), pattern = ".xlsm", recursive = T)
   
-  # exclude file paterns, if any
-  if (is.null(exclude)) {
+  # excludeAny file paterns, if any
+  if (is.null(excludeAny)) {
     files  
   } else {
-    files %<>% .[!grepl(paste0(exclude, collapse = "|"), .)] # using separator "|" is producing regex patern list
+    files %<>% .[!grepl(paste0(excludeAny, collapse = "|"), .)] # using separator "|" is producing regex patern list
   }
 }
 
 # slurp xls function
-slurpData <- function(target, files, ws) {
+slurpData <- function(target=core$target,
+                      files=core$files,
+                      ws=core$worksheet) {
   # load all files in folder via loop to data
   data <- data.frame()
   n=0
   for (f in files) {
     
-    path <- paste0(target, "/", f)
-    # the path in read_excel is hiding encoding hell,-it must not include non-standard characters
-    dataNow <- read_excel(path, sheet = ws)
-    ## dataNow %<>% filter(.$'app-list'!="!")
+    # use the file.path() funcition EVER!!! (avoid system, back/fwrd slash and encoding hell)
+    path <- file.path(target, f)
+    dataNow <- readxl::read_excel(path, sheet = ws)
     dataNow$Source <- path
     
     dataNow
@@ -44,14 +41,6 @@ slurpData <- function(target, files, ws) {
   data
 }
 
-# data scrubbing and formating
-scrubbing <- function(dt) {
-  dt %<>% filter(!is.na(.$`price-extra`))
-  dt$end=NULL
-  dt$`date-saved` %<>% as.character
-  dt
-}
-
 # UTILS
 viewDataSnipet <- function(dt = datas$scr, row = 1) {
   dt %>%
@@ -62,28 +51,23 @@ viewDataSnipet <- function(dt = datas$scr, row = 1) {
 }
 
 writeDataCsv <- function(dt = datas$scr,
-                         f = "data_scrubbed.csv") {
+                         f = "data_raw.csv") {
   write.csv(dt, f)
-}
-
-filterDataScrubbed <- function(filterNow) {
-  # TODO
-  filter(dataScrubbed, filterNow)
 }
 
 
 main <- function() {
+  # init settings from JSON
+  getSettings <- (function() {RJSONIO::fromJSON("settings.json", encoding = "UTF-8")})()
   core <<- list(
-    target = target <- getSettings()$dir,
-    out_of_scope = out <- getSettings()$outOfScope,
+    target = target <- getSettings$dirData,
+    out_of_scope = out <- getSettings$outOfScope,
     files = files <- setFiles(target, out),
-    worksheet = ws <- getSettings()$sheet
+    worksheet = ws <- getSettings$sheet
   )
   datas <<- list(
     # raw data
-    raw = r <- slurpData(target, files, ws),
-    # scrubbed
-    scr = r %>% scrubbing
+    raw = r <- slurpData(target, files, ws)
   )
 }
 
@@ -92,14 +76,18 @@ function() {
   
   main()
   core$files
+  core$out_of_scope
   core$target
   core$worksheet
   
-  viewDataSnipet(10)
+  View(datas$raw)
+  writeDataCsv()
   
-  printFileNames(core$files)
+  viewDataSnipet()
   
-  datas$scr$release %>% table %>%  data.frame %>% View
+  path <- file.path(getSettings()$dirData)
+  path
   
   rm(list = ls())
+  source('DataSlurp.R', encoding = 'UTF-8', echo=FALSE)
 }

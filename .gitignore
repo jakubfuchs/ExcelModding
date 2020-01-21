@@ -3,3 +3,6 @@
 .Rproj.user
 .RData
 .Rhistory
+*.csv
+*.html
+*.rmd
