@@ -15,7 +15,8 @@ setFiles <- function(target=core$target, excludeAny=NULL) {
 }
 
 # slurp xls function
-slurpData <- function(target=core$target,
+slurpData <- function(readFn=(function(path, sheet) readxl::read_excel(path, sheet)),
+                      target=core$target,
                       files=core$files,
                       ws=core$worksheet) {
   # load all files in folder via loop to data
@@ -25,7 +26,7 @@ slurpData <- function(target=core$target,
     
     # use the file.path() funcition EVER!!! (avoid system, back/fwrd slash and encoding hell)
     path <- file.path(target, f)
-    dataNow <- readxl::read_excel(path, sheet = ws)
+    dataNow <- readFn(path, ws)
     dataNow$Source <- path
     
     dataNow
@@ -63,11 +64,15 @@ main <- function() {
     target = target <- getSettings$dirData,
     out_of_scope = out <- getSettings$outOfScope,
     files = files <- setFiles(target, out),
-    worksheet = ws <- getSettings$sheet
+    worksheet = ws <- getSettings$sheet,
+    readFn = read <- (function(path, sheet) readxl::read_excel(path, sheet))
   )
   datas <<- list(
     # raw data
-    raw = r <- slurpData(target, files, ws)
+    raw = r <- slurpData(readFn = read,
+                         target = target,
+                         files = files,
+                         ws = ws)
   )
 }
 
@@ -88,6 +93,10 @@ function() {
   path <- file.path(getSettings()$dirData)
   path
   
+  slurpData(readFn = (function(path, sheet) readxl::read_excel(path, sheet, col_names = FALSE))) %>% View
+  slurpData(target = core$target, files = core$files, ws = core$worksheet) %>% View
+  
   rm(list = ls())
   source('DataSlurp.R', encoding = 'UTF-8', echo=FALSE)
+  
 }
