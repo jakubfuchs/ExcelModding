@@ -3,7 +3,7 @@ library(dplyr)
 
 # define and set files in scope
 setFiles <- function(target=core$target, excludeAny=NULL) {
-  # use the file.path() funcition EVER!!! (avoid system, back/fwrd slash and encoding hell)
+  # use the file.path() function EVER!!! (avoids system-specifics, back/fwrd slash and encoding hell)
   files <- list.files(file.path(target), pattern = ".xlsm", recursive = T)
   
   # excludeAny file paterns, if any
@@ -24,7 +24,7 @@ slurpData <- function(readFn=(function(path, sheet) readxl::read_excel(path, she
   n=0
   for (f in files) {
     
-    # use the file.path() funcition EVER!!! (avoid system, back/fwrd slash and encoding hell)
+    # use the file.path() function EVER!!! (avoids system-specifics, back/fwrd slash and encoding hell)
     path <- file.path(target, f)
     dataNow <- readFn(path, ws)
     dataNow$Source <- path
@@ -86,7 +86,7 @@ function() {
   core$worksheet
   
   View(datas$raw)
-  writeDataCsv()
+  writeDataCsv(dt = datas$raw, f = "compare.csv")
   
   viewDataSnipet()
   
