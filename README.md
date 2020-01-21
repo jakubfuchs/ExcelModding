@@ -7,10 +7,9 @@ The coding is adjusted for RStudio based work-flow.
 The work-flow consists of:
 - `DataSlurp.R` - Main methods for slurping files from data folder, by default based on `settings.json` file.
 
-- `settings.json` example (the file is not in repo):
+- `settings.json` minimal required example (the file is not in repo):
 ```bash
 {
-  "dirLocal": "C:/User/dataDir",
   "dirData": "//network/User/dataDir,
   "sheet": "export_data",
   "outOfScope": ["~",
