@@ -43,7 +43,7 @@ slurpData <- function(readFn=(function(path, sheet) readxl::read_excel(path, she
 }
 
 # UTILS
-viewDataSnipet <- function(dt = datas$scr, row = 1) {
+viewDataSnipet <- function(dt = datas$raw, row = 1) {
   dt %>%
     .[row,] %>%
     unlist %>%
@@ -51,7 +51,7 @@ viewDataSnipet <- function(dt = datas$scr, row = 1) {
     View
 }
 
-writeDataCsv <- function(dt = datas$scr,
+writeDataCsv <- function(dt = datas$raw,
                          f = "data_raw.csv") {
   write.csv(dt, f)
 }
